@@ -6,17 +6,32 @@ const Player = {
   'heldItem': 0,
   'move': (input)=>{
     if (input%2 == 0){
-      Player['y'] += (input-3)*4
-      
+      Player['y'] += (input-3)*3
     } else{
-      Player['x'] += (input-2)*4
+      Player['x'] += (input-2)*3
+    }
+    for (let gotoGo = 0; gotoGo< 4;gotoGo++){
+      let list_Of_Stations = ["walls","cooking","food","delivering"]
+      let key = list_Of_Stations[gotoGo]
+      for (let i = 0; i<stations[key].length;i++){
+        if (SDist(Player['x']+15,0,(stations[key][i][0]+stations[key][i][2])/2,0)<35 && SDist(Player['y']+25,0,(stations[key][i][1]+stations[key][i][3])/2,0)<45){
+          if (input%2 == 0){
+            Player['y'] -= (input-3)*3
+          } else{
+            Player['x'] -= (input-2)*3
+          }
+        }
+      }
     }
   },
   'devCreationTool': {
     "is_active":false,
     "holdingObject":false,
     "holdingWhat":0,},
-  "Wait": [0,0,0,0,0,0,0,0,0,0,0,0]
+  "Wait": [0,0,0,0,0,0,0,0,0,0,0,0],
+  "grab": ()=>{
+    
+  }
 }
 
 const stations = {
@@ -36,6 +51,7 @@ const KEYS_DOWN = {
   "s": {bool: false, func: ()=>{Player.move(4) }},
   "a": {bool: false, func: ()=>{Player.move(1) }},
   "d": {bool: false, func: ()=>{Player.move(3) }},
+  "e": {bool: false, func: ()=>{Player.grab()}},
   "l": {bool: false, func: ()=>{}},
   "p": {bool: false, func: ()=>{if (KEYS_DOWN['l'].bool){Player.devCreationTool.is_active= true}}},
   "r": {bool: false, func: ()=>{Player.devCreationTool.is_active = false}},
@@ -72,13 +88,13 @@ window.addEventListener("keyup",(event)=>{
 // Wall and station function because of lazyness
 function createLEVEL(){
   if (Player.devCreationTool.is_active){
-    fill(0,0,200)
+    colourFills(0)
     rect(20,20,40,40)
-    fill(0,200,0)
+    colourFills(1)
     rect(120,20,40,40)
-    fill(200,0,0)
+    colourFills(2)
     rect(220,20,40,40)
-    fill(100,0,200)
+    colourFills(3)
     rect(320,20,40,40)
   }
   // shows the objects in the level
@@ -87,10 +103,12 @@ function createLEVEL(){
     let list_Of_Stations = ["walls","cooking","food","delivering"]
     let key = list_Of_Stations[gotoGo]
     for (let i = 0; i<stations[key].length;i++){
-      console.loog(stations[key][i])
+      colourFills(stations[key][i][4])
+      rect(stations[key][i][0],stations[key][i][1],40,40)
     }
   }
   if (Player.devCreationTool.holdingObject){
+    colourFills(Player.devCreationTool.holdingWhat)
     rect(Math.floor(mouseX/40)*40,Math.floor(mouseY/40)*40,40,40)
   }
   
@@ -101,10 +119,22 @@ function createLEVEL(){
  * when done will check for all ui elements and if they are active then go on to active interactive elements
  */
 function mouseClicked(){
-  if (Player.devCreationTool.holdingObject&& Player.Wait[0]<new Date().getTime()){
+  if (Player.devCreationTool.holdingObject && Player.Wait[0]<new Date().getTime()){
     stations.walls.unshift([Math.floor(mouseX/40)*40,Math.floor(mouseY/40)*40,Math.ceil(mouseX/40)*40,Math.ceil(mouseY/40)*40,Player.devCreationTool.holdingWhat])
     console.log(stations.walls[0])
     Player.devCreationTool.holdingObject = false
+    Player.Wait[0] = new Date().getTime() + 500
+
+  } else if(Player.devCreationTool.is_active && (!Player.devCreationTool.holdingObject) && Player.Wait[0]<new Date().getTime()){
+    for (let gotoGo = 0; gotoGo< 4;gotoGo++){
+      let list_Of_Stations = ["walls","cooking","food","delivering"]
+      let key = list_Of_Stations[gotoGo]
+      for (let i = 0; i<stations[key].length;i++){
+        if (SDist(mouseX,0,(stations[key][i][0]+stations[key][i][2])/2,0)<20 && SDist(mouseY,0,(stations[key][i][1]+stations[key][i][3])/2,0)<20){
+          stations[key] = removeFromList(stations[key],i)
+        }
+      }
+    }
   }
   for (let i = 0; i<UICordinates.length;i++){
     if (UICordinates[i][4]){
@@ -121,7 +151,7 @@ function mouseClicked(){
         Player.devCreationTool.holdingObject = true
         Player.devCreationTool.holdingWhat = i
         console.log(Player.devCreationTool)
-        Player.Wait[0] = new Date().getTime() + 1000 
+        Player.Wait[0] = new Date().getTime() + 500 
       } else if( i <8){
 
       }
@@ -137,6 +167,33 @@ function mouseClicked(){
  */
 function SDist(value1,value2,value3,value4){
   return Math.sqrt(((value1-value3)**2)+((value2-value4)**2))
+}
+
+//because some sets of colours are used more than others and making a function to get them is easier
+function colourFills(id){
+  if (id == 0){
+    fill(0,0,200)
+  } else if(id==1){
+    fill(0,200,0)
+  }else if(id==2){
+    fill(200,0,0)
+  }else if(id==3){
+    fill(100,0,200)
+  }
+}
+
+/**
+ * type in the id number second for which id you want to get rid of
+ * 
+ */
+function removeFromList(list,id){
+  let TempList = []
+  for (let r = 0; r<list.length;r++){
+    if (r != id){
+      TempList.push(list[r])
+    }
+  }
+  return TempList
 }
 
 //-----------------------------------------------------------------------------------------------------
