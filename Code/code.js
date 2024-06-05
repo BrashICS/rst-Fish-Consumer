@@ -39,6 +39,7 @@ const stations = {
   'food': [],
   'cooking': [],
   'delivering': [],
+  'giveNAME': ["walls","cooking","food","delivering"]
 }
 
 
@@ -77,6 +78,20 @@ window.addEventListener("keyup",(event)=>{
   }
 })
 
+
+document.querySelector("#giveText").addEventListener("click",()=>{
+  let dave = []
+  for (let gotoGo = 0; gotoGo< 4;gotoGo++){
+    let list_Of_Stations = stations.giveNAME
+    let key = list_Of_Stations[gotoGo]
+    dave.push(list_Of_Stations[gotoGo],[])
+    for (let i = 0; i<stations[key].length;i++){
+      dave[(gotoGo*2)+1].push([stations[key][i][0]/10,stations[key][i][1]/10])
+    }
+  }
+  console.log(dave)
+  document.querySelector("#levelShowData").textContent = dave
+})
 /**
  * for testing colours of walls will dhow what is what
  * 
@@ -100,7 +115,7 @@ function createLEVEL(){
   // shows the objects in the level
   
   for (let gotoGo = 0; gotoGo< 4;gotoGo++){
-    let list_Of_Stations = ["walls","cooking","food","delivering"]
+    let list_Of_Stations = stations.giveNAME
     let key = list_Of_Stations[gotoGo]
     for (let i = 0; i<stations[key].length;i++){
       colourFills(stations[key][i][4])
@@ -120,14 +135,14 @@ function createLEVEL(){
  */
 function mouseClicked(){
   if (Player.devCreationTool.holdingObject && Player.Wait[0]<new Date().getTime()){
-    stations.walls.unshift([Math.floor(mouseX/40)*40,Math.floor(mouseY/40)*40,Math.ceil(mouseX/40)*40,Math.ceil(mouseY/40)*40,Player.devCreationTool.holdingWhat])
-    console.log(stations.walls[0])
+    // Checks for name then to toss some coordinates at the array that fits the type of object you put down
+    stations[stations.giveNAME[Player.devCreationTool.holdingWhat]].unshift([Math.floor(mouseX/40)*40,Math.floor(mouseY/40)*40,Math.ceil(mouseX/40)*40,Math.ceil(mouseY/40)*40,Player.devCreationTool.holdingWhat])
     Player.devCreationTool.holdingObject = false
     Player.Wait[0] = new Date().getTime() + 500
 
   } else if(Player.devCreationTool.is_active && (!Player.devCreationTool.holdingObject) && Player.Wait[0]<new Date().getTime()){
     for (let gotoGo = 0; gotoGo< 4;gotoGo++){
-      let list_Of_Stations = ["walls","cooking","food","delivering"]
+      let list_Of_Stations = stations.giveNAME
       let key = list_Of_Stations[gotoGo]
       for (let i = 0; i<stations[key].length;i++){
         if (SDist(mouseX,0,(stations[key][i][0]+stations[key][i][2])/2,0)<20 && SDist(mouseY,0,(stations[key][i][1]+stations[key][i][3])/2,0)<20){
@@ -196,6 +211,38 @@ function removeFromList(list,id){
   return TempList
 }
 
+
+function SetUpLevel(Code){
+  Code = String(Code)
+  for (let i=0;i < Code.length;){
+    while (Code[i]!="," && i < Code.length){
+      i++
+    }
+    i++
+    if (Code[i]!=","){
+      let dave = ["",""]
+      Player.Wait[1] = 0
+      for (;(!isNaN(Code[i]) || Code[i] != ",") && i < Code.length;i++){
+        if (Code[i]=="," && Player.Wait[1] == 1){
+          i++
+          stations[stations.giveNAME[i]].push(dave)
+          console.log(dave)
+          dave = ["",""]
+          Player.Wait[1] = 0
+        } else if (Code[i]=="," && Player.Wait[1] == 0) {
+          Player.Wait[1] = 1
+        } else {
+          dave[Player.Wait[1]] += Code[i]
+        }
+      }
+    } else{
+      i++
+    }
+    
+  }
+
+}
+
 //-----------------------------------------------------------------------------------------------------
 function setup(){
   createCanvas(1200,800)
@@ -215,10 +262,12 @@ function draw(){
     for (let i = 0; i< 4; i++){
       UICordinates[i][4] = true
     }
+    document.querySelector("#giveText").hidden = false
     } else {
       for (let i = 0; i< 4; i++){
         UICordinates[i][4] = false
       }
+      document.querySelector("#giveText").hidden = true
     } 
     createLEVEL()
   
