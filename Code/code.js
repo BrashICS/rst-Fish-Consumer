@@ -14,7 +14,7 @@ const Player = {
       let list_Of_Stations = ["walls","cooking","food","delivering"]
       let key = list_Of_Stations[gotoGo]
       for (let i = 0; i<stations[key].length;i++){
-        if (SDist(Player['x']+15,0,(stations[key][i][0]+stations[key][i][2])/2,0)<35 && SDist(Player['y']+25,0,(stations[key][i][1]+stations[key][i][3])/2,0)<45){
+        if (SDist(Player['x']+15,0,stations[key][i][0]+(stations[key][i][2]/2),0)<35 && SDist(Player['y']+15,0,stations[key][i][1]+(stations[key][i][2]/2),0)<35){
           if (input%2 == 0){
             Player['y'] -= (input-3)*3
           } else{
@@ -23,6 +23,7 @@ const Player = {
         }
       }
     }
+    
   },
   'devCreationTool': {
     "is_active":false,
@@ -89,7 +90,6 @@ document.querySelector("#giveText").addEventListener("click",()=>{
       dave[(gotoGo*2)+1].push([stations[key][i][0]/10,stations[key][i][1]/10])
     }
   }
-  console.log(dave)
   document.querySelector("#levelShowData").textContent = dave
 })
 /**
@@ -118,7 +118,7 @@ function createLEVEL(){
     let list_Of_Stations = stations.giveNAME
     let key = list_Of_Stations[gotoGo]
     for (let i = 0; i<stations[key].length;i++){
-      colourFills(stations[key][i][4])
+      colourFills(stations[key][i][3])
       rect(stations[key][i][0],stations[key][i][1],40,40)
     }
   }
@@ -136,16 +136,15 @@ function createLEVEL(){
 function mouseClicked(){
   if (Player.devCreationTool.holdingObject && Player.Wait[0]<new Date().getTime()){
     // Checks for name then to toss some coordinates at the array that fits the type of object you put down
-    stations[stations.giveNAME[Player.devCreationTool.holdingWhat]].unshift([Math.floor(mouseX/40)*40,Math.floor(mouseY/40)*40,Math.ceil(mouseX/40)*40,Math.ceil(mouseY/40)*40,Player.devCreationTool.holdingWhat])
+    stations[stations.giveNAME[Player.devCreationTool.holdingWhat]].unshift([Math.floor(mouseX/40)*40,Math.floor(mouseY/40)*40,40,Player.devCreationTool.holdingWhat])
     Player.devCreationTool.holdingObject = false
     Player.Wait[0] = new Date().getTime() + 500
 
   } else if(Player.devCreationTool.is_active && (!Player.devCreationTool.holdingObject) && Player.Wait[0]<new Date().getTime()){
     for (let gotoGo = 0; gotoGo< 4;gotoGo++){
-      let list_Of_Stations = stations.giveNAME
-      let key = list_Of_Stations[gotoGo]
+      let key = stations.giveNAME[gotoGo]
       for (let i = 0; i<stations[key].length;i++){
-        if (SDist(mouseX,0,(stations[key][i][0]+stations[key][i][2])/2,0)<20 && SDist(mouseY,0,(stations[key][i][1]+stations[key][i][3])/2,0)<20){
+        if (SDist(mouseX,0,stations[key][i][0]+(stations[key][i][2]/2),0)<20 && SDist(mouseY,0,stations[key][i][1]+(stations[key][i][2]/2),0)<20){
           stations[key] = removeFromList(stations[key],i)
         }
       }
@@ -165,7 +164,6 @@ function mouseClicked(){
       if (i<4){
         Player.devCreationTool.holdingObject = true
         Player.devCreationTool.holdingWhat = i
-        console.log(Player.devCreationTool)
         Player.Wait[0] = new Date().getTime() + 500 
       } else if( i <8){
 
@@ -211,25 +209,29 @@ function removeFromList(list,id){
   return TempList
 }
 
-
+// First Stage "walls,68,28,64,32,64,24,cooking,28,32,28,24,28,28,food,52,36,52,20,delivering,68,32,68,24,64,28,80,32,80,36,80,40,76,40,68,40,72,40,64,40,60,40,56,40,52,40,44,40,48,40,40,40,36,40,80,28,80,24,80,20,80,16,76,16,72,16,68,16,64,16,60,16,56,16,52,16,48,16,44,16,40,16,36,16,32,40,28,40,28,36,32,16,28,16,28,20"
+//  "walls,,cooking,,food,56,24,56,20,delivering,56,16"
 function SetUpLevel(Code){
-  Code = String(Code)
+  Code = String(Code)+ ","
+  let whitchStation = 0
   for (let i=0;i < Code.length;){
     while (Code[i]!="," && i < Code.length){
       i++
     }
     i++
     if (Code[i]!=","){
+
       let dave = ["",""]
       Player.Wait[1] = 0
-      for (;(!isNaN(Code[i]) || Code[i] != ",") && i < Code.length;i++){
+      for (;(!isNaN(Code[i]) || Code[i] == ",") && i < Code.length;i++){
         if (Code[i]=="," && Player.Wait[1] == 1){
-          i++
-          stations[stations.giveNAME[i]].push(dave)
-          console.log(dave)
+          dave[0] = Number(dave[0])*10
+          dave[1] = Number(dave[1])*10
+          dave.push(40,whitchStation)
+          stations[stations.giveNAME[whitchStation]].push(dave)
           dave = ["",""]
           Player.Wait[1] = 0
-        } else if (Code[i]=="," && Player.Wait[1] == 0) {
+        } else if (Code[i] == "," && Player.Wait[1] == 0) {
           Player.Wait[1] = 1
         } else {
           dave[Player.Wait[1]] += Code[i]
@@ -238,6 +240,7 @@ function SetUpLevel(Code){
     } else{
       i++
     }
+    whitchStation++
     
   }
 
@@ -255,7 +258,7 @@ function draw(){
   rect(120,80,960,640)
 
   fill(195)
-  rect(Player['x'],Player['y'],30,50)
+  rect(Player['x'],Player['y'],30,30)
   KEYS_DOWN["check"]()
   circle(mouseX,mouseY,30)
   if (Player.devCreationTool.is_active) {
