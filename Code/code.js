@@ -29,10 +29,47 @@ const Player = {
     "is_active":false,
     "holdingObject":false,
     "holdingWhat":0,},
+    /** Wait List;
+     * 
+     *  0 = cooldown to inteact with objects for devtool;   
+     *  1 = For the SetUpStage function when it is either putting the numbers for the "X ID" or the "Y ID" for the wall;   
+     *  2 = Cooldown to grab an object;   
+     * 
+     */
   "Wait": [0,0,0,0,0,0,0,0,0,0,0,0],
   "grab": ()=>{
-    
-  }
+    let Xoffset = 0
+    let Yoffset = 0
+    if (!(KEYS_DOWN['w'].bool && KEYS_DOWN['s'].bool)){
+      if (KEYS_DOWN['w'].bool){
+        Yoffset -= 20
+      } else if(KEYS_DOWN['s'].bool){
+        Yoffset += 20
+      }
+    }
+    if (!(KEYS_DOWN['a'].bool && KEYS_DOWN['d'].bool)){
+      if (KEYS_DOWN['a'].bool){
+        Xoffset -= 20
+      } else if(KEYS_DOWN['d'].bool){
+        Xoffset += 20
+      }
+    }
+    for (let gotoGo = 0; gotoGo< 4;gotoGo++){
+        let list_Of_Stations = ["walls","cooking","food","delivering"]
+        let key = list_Of_Stations[gotoGo]
+        for (let i = 0; i<stations[key].length;i++){
+          if (SDist(Player['x']+15+Xoffset,0,stations[key][i][0]+(stations[key][i][2]/2),0)<35 && SDist(Player['y']+15+Yoffset,0,stations[key][i][1]+(stations[key][i][2]/2),0)<35){
+            if (Player.heldItem = 0 && key == "food"){
+              Player.heldItem = 1
+              console.log("grabed")
+            } else if (Player.heldItem = 0 && key == "cooking"){
+              console.log("cooking")
+            }
+          } 
+        }
+      }
+    }
+  
 }
 
 const stations = {
@@ -53,7 +90,7 @@ const KEYS_DOWN = {
   "s": {bool: false, func: ()=>{Player.move(4) }},
   "a": {bool: false, func: ()=>{Player.move(1) }},
   "d": {bool: false, func: ()=>{Player.move(3) }},
-  "e": {bool: false, func: ()=>{Player.grab()}},
+  "f": {bool: false, func: ()=>{if (Player.Wait[2] < new Date().getTime())Player.grab()}},
   "l": {bool: false, func: ()=>{}},
   "p": {bool: false, func: ()=>{if (KEYS_DOWN['l'].bool){Player.devCreationTool.is_active= true}}},
   "r": {bool: false, func: ()=>{Player.devCreationTool.is_active = false}},
@@ -95,8 +132,8 @@ document.querySelector("#giveText").addEventListener("click",()=>{
 /**
  * for testing colours of walls will dhow what is what
  * 
- * blue = food;
- * red = cook;
+ * red = food;
+ * blue = cook;
  * green = deliver;
  * purple = wall;
  */
@@ -209,6 +246,7 @@ function removeFromList(list,id){
   return TempList
 }
 
+SetUpLevel("walls,68,28,64,32,64,24,cooking,28,32,28,24,28,28,food,52,36,52,20,delivering,68,32,68,24,64,28,80,32,80,36,80,40,76,40,68,40,72,40,64,40,60,40,56,40,52,40,44,40,48,40,40,40,36,40,80,28,80,24,80,20,80,16,76,16,72,16,68,16,64,16,60,16,56,16,52,16,48,16,44,16,40,16,36,16,32,40,28,40,28,36,32,16,28,16,28,20")
 // First Stage "walls,68,28,64,32,64,24,cooking,28,32,28,24,28,28,food,52,36,52,20,delivering,68,32,68,24,64,28,80,32,80,36,80,40,76,40,68,40,72,40,64,40,60,40,56,40,52,40,44,40,48,40,40,40,36,40,80,28,80,24,80,20,80,16,76,16,72,16,68,16,64,16,60,16,56,16,52,16,48,16,44,16,40,16,36,16,32,40,28,40,28,36,32,16,28,16,28,20"
 //  "walls,,cooking,,food,56,24,56,20,delivering,56,16"
 function SetUpLevel(Code){
