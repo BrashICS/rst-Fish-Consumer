@@ -23,6 +23,26 @@ const Player = {
         }
       }
     }
+    let Xoffset = 0
+    let Yoffset = 0
+    
+    if (!(KEYS_DOWN['w'].bool && KEYS_DOWN['s'].bool)){
+      if (KEYS_DOWN['w'].bool){
+        Yoffset -= 20
+      } else if(KEYS_DOWN['s'].bool){
+        Yoffset += 20
+      }
+      Player.LastLook[1] = Yoffset
+        
+    }
+    if (!(KEYS_DOWN['a'].bool && KEYS_DOWN['d'].bool)){
+      if (KEYS_DOWN['a'].bool){
+        Xoffset -= 20
+      } else if(KEYS_DOWN['d'].bool){
+        Xoffset += 20
+      }
+      Player.LastLook[0] = Xoffset
+    }
     
   },
   'devCreationTool': {
@@ -38,37 +58,33 @@ const Player = {
      */
   "Wait": [0,0,0,0,0,0,0,0,0,0,0,0],
   "grab": ()=>{
-    let Xoffset = 0
-    let Yoffset = 0
-    if (!(KEYS_DOWN['w'].bool && KEYS_DOWN['s'].bool)){
-      if (KEYS_DOWN['w'].bool){
-        Yoffset -= 20
-      } else if(KEYS_DOWN['s'].bool){
-        Yoffset += 20
-      }
-    }
-    if (!(KEYS_DOWN['a'].bool && KEYS_DOWN['d'].bool)){
-      if (KEYS_DOWN['a'].bool){
-        Xoffset -= 20
-      } else if(KEYS_DOWN['d'].bool){
-        Xoffset += 20
-      }
-    }
     for (let gotoGo = 0; gotoGo< 4;gotoGo++){
         let list_Of_Stations = ["walls","cooking","food","delivering"]
         let key = list_Of_Stations[gotoGo]
         for (let i = 0; i<stations[key].length;i++){
-          if (SDist(Player['x']+15+Xoffset,0,stations[key][i][0]+(stations[key][i][2]/2),0)<35 && SDist(Player['y']+15+Yoffset,0,stations[key][i][1]+(stations[key][i][2]/2),0)<35){
-            if (Player.heldItem = 0 && key == "food"){
+          if (SDist(Player['x']+15+Player.LastLook[0],0,stations[key][i][0]+(stations[key][i][2]/2),0)<35 && SDist(Player['y']+15+Player.LastLook[1],0,stations[key][i][1]+(stations[key][i][2]/2),0)<35){
+            console.log("hit")
+            if (Player.heldItem == 0 && key == "food"){
               Player.heldItem = 1
               console.log("grabed")
-            } else if (Player.heldItem = 0 && key == "cooking"){
-              console.log("cooking")
+              
+            } else if (key == "cooking"){
+              if (Player.heldItem == 1 && stations[key][i][3] == 1){
+                console.log("cooking")
+              stations[key][i][3] = 4
+              Player.heldItem = 0
+              } else if (Player.heldItem == 0 && stations[key][i][3] == 4){
+                console.log("cooking2")
+              }
+               
             }
+            Player.Wait[2] = new Date().getTime() +500
           } 
         }
       }
-    }
+    },
+    "LastLook":[0,0]
+
   
 }
 
@@ -221,14 +237,16 @@ function SDist(value1,value2,value3,value4){
 
 //because some sets of colours are used more than others and making a function to get them is easier
 function colourFills(id){
-  if (id == 0){
+  if (id == 2){
     fill(0,0,200)
-  } else if(id==1){
+  } else if(id==3){
     fill(0,200,0)
-  }else if(id==2){
+  }else if(id==1){
     fill(200,0,0)
-  }else if(id==3){
+  }else if(id==0){
     fill(100,0,200)
+  } else if(id==4){
+    fill(200,50,150)
   }
 }
 
@@ -246,8 +264,8 @@ function removeFromList(list,id){
   return TempList
 }
 
-SetUpLevel("walls,68,28,64,32,64,24,cooking,28,32,28,24,28,28,food,52,36,52,20,delivering,68,32,68,24,64,28,80,32,80,36,80,40,76,40,68,40,72,40,64,40,60,40,56,40,52,40,44,40,48,40,40,40,36,40,80,28,80,24,80,20,80,16,76,16,72,16,68,16,64,16,60,16,56,16,52,16,48,16,44,16,40,16,36,16,32,40,28,40,28,36,32,16,28,16,28,20")
-// First Stage "walls,68,28,64,32,64,24,cooking,28,32,28,24,28,28,food,52,36,52,20,delivering,68,32,68,24,64,28,80,32,80,36,80,40,76,40,68,40,72,40,64,40,60,40,56,40,52,40,44,40,48,40,40,40,36,40,80,28,80,24,80,20,80,16,76,16,72,16,68,16,64,16,60,16,56,16,52,16,48,16,44,16,40,16,36,16,32,40,28,40,28,36,32,16,28,16,28,20"
+SetUpLevel("walls,76,40,72,40,68,40,64,40,60,40,80,36,80,32,80,28,80,24,80,20,76,16,72,16,68,16,64,16,60,16,56,16,52,16,48,16,44,16,40,16,36,16,32,16,56,40,52,40,48,40,44,40,40,40,36,40,32,40,80,40,80,16,68,28,64,32,64,24,68,28,64,32,64,24,28,16,28,36,28,40,28,20,68,28,64,32,64,24,cooking,52,36,52,20,food,68,32,68,24,64,28,delivering,28,32,28,28,28,24")
+// First Stage "walls,76,40,72,40,68,40,64,40,60,40,80,36,80,32,80,28,80,24,80,20,76,16,72,16,68,16,64,16,60,16,56,16,52,16,48,16,44,16,40,16,36,16,32,16,56,40,52,40,48,40,44,40,40,40,36,40,32,40,80,40,80,16,68,28,64,32,64,24,68,28,64,32,64,24,28,16,28,36,28,40,28,20,68,28,64,32,64,24,cooking,52,36,52,20,food,68,32,68,24,64,28,delivering,28,32,28,28,28,24"
 //  "walls,,cooking,,food,56,24,56,20,delivering,56,16"
 function SetUpLevel(Code){
   Code = String(Code)+ ","
