@@ -58,6 +58,7 @@ const Player = {
      */
   "Wait": [0,0,0,0,0,0,0,0,0,0,0,0],
   "grab": ()=>{
+    if (Player.heldItem == 99) Player.heldItem = 0;
     for (let gotoGo = 0; gotoGo< 4;gotoGo++){
         let list_Of_Stations = ["walls","cooking","food","delivering"]
         let key = list_Of_Stations[gotoGo]
@@ -69,25 +70,44 @@ const Player = {
               console.log("grabed")
               
             } else if (key == "cooking"){
+              stations[key][i][5] = 0
               if (Player.heldItem == 1 && stations[key][i][3] == 1){
                 console.log("cooking")
               stations[key][i][3] = 4
               Player.heldItem = 0
               } else if (Player.heldItem == 0 && stations[key][i][3] == 4){
-                console.log("cooking2")
-              }
-               
+                stations[key][i][3] = 1
+              } else if (Player.heldItem == 0 && stations[key][i][3] == 5){
+                Player.heldItem = 2
+                stations[key][i][3] = 1
+              } else if (Player.heldItem == 0 && stations[key][i][3] == 6){
+                Player.heldItem = 99
+                stations[key][i][3] = 1
+              } 
+            } else if (Player.heldItem > 0 && key == "delivering"){
+                Player.heldItem = 0
+                Player.Score += 300
             }
             Player.Wait[2] = new Date().getTime() +500
           } 
         }
       }
     },
-    "LastLook":[0,0]
+    "LastLook":[0,0],
+    "Score": 0
 
   
 }
-
+/** 
+ *  0 = X pos;
+ *  1 = Y pos;
+ *  2 = size of box;
+ *  3 = what station type is it;
+ *  4 (food) = type of food it gives;
+ *  4 (cooking) = type of food put in;
+ *  5 (cooking) = time cooking;
+ * 
+ *  */ 
 const stations = {
   'walls': [],
   'food': [],
@@ -228,7 +248,7 @@ function mouseClicked(){
 }
 
 /**
- * type "0" in the second and fourth places if it is a 2 variable check;
+ * type "0" in the second and fourth places if it is a 2 variable{} check;
  *  (x1,y1,x2,y2)
  */
 function SDist(value1,value2,value3,value4){
@@ -247,6 +267,10 @@ function colourFills(id){
     fill(100,0,200)
   } else if(id==4){
     fill(200,50,150)
+  }else if(id==6){
+    fill(100)
+  }else if(id==5){
+    fill(242,210,189)
   }
 }
 
@@ -284,6 +308,9 @@ function SetUpLevel(Code){
           dave[0] = Number(dave[0])*10
           dave[1] = Number(dave[1])*10
           dave.push(40,whitchStation)
+          if (whitchStation == 1){
+            dave.push(0,0)
+          } else if (whitchStation == 2) dave.push(0);
           stations[stations.giveNAME[whitchStation]].push(dave)
           dave = ["",""]
           Player.Wait[1] = 0
@@ -316,7 +343,6 @@ function draw(){
   fill(195)
   rect(Player['x'],Player['y'],30,30)
   KEYS_DOWN["check"]()
-  circle(mouseX,mouseY,30)
   if (Player.devCreationTool.is_active) {
     for (let i = 0; i< 4; i++){
       UICordinates[i][4] = true
@@ -329,5 +355,17 @@ function draw(){
       document.querySelector("#giveText").hidden = true
     } 
     createLEVEL()
-  
+    for (let i = 0; i< stations["cooking"].length;i++){
+      if (stations["cooking"][i][3] == 4 || stations["cooking"][i][3] == 5){
+        if (stations["cooking"][i][5] > 1000) {
+          stations["cooking"][i][3] = 6
+        } else if (stations["cooking"][i][5] > 500){
+          stations["cooking"][i][3] = 5;
+        }
+        stations["cooking"][i][5] += 1
+      }
+    }
+    fill(195)
+    circle(mouseX,mouseY,30)
+
 }
