@@ -41,6 +41,7 @@ const Player = {
       } else if(KEYS_DOWN['d'].bool){
         Xoffset += 20
       }
+      if (Xoffset != 0) Player.LastLook[2] = Xoffset;
       Player.LastLook[0] = Xoffset
     }
     
@@ -53,8 +54,8 @@ const Player = {
      * 
      *  0 = cooldown to inteact with objects for devtool;   
      *  1 = For the SetUpStage function when it is either putting the numbers for the "X ID" or the "Y ID" for the wall;   
-     *  2 = Cooldown to grab an object;   
-     * 
+     *  2 = Cooldown to grab an object; 
+     *  3 = game going on too long;
      */
   "Wait": [0,0,0,0,0,0,0,0,0,0,0,0],
   "grab": ()=>{
@@ -67,7 +68,7 @@ const Player = {
             console.log("hit")
             if (Player.heldItem == 0 && key == "food"){
               Player.heldItem = 1
-              console.log("grabed")
+              console.log("graed")
               
             } else if (key == "cooking"){
               stations[key][i][5] = 0
@@ -93,7 +94,7 @@ const Player = {
         }
       }
     },
-    "LastLook":[0,0],
+    "LastLook":[0,0,0],
     "Score": 0
 
   
@@ -115,8 +116,11 @@ const stations = {
   'delivering': [],
   'giveNAME': ["walls","cooking","food","delivering"]
 }
+let projCO = [[800,200,60,1,2,4],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0]]
 
-
+for (let i = 0; i<projCO.length;i++){
+  projCO[i].push(0)
+}
 let UICordinates = [[20,20,60,60,false],[120,20,160,60,0],[220,20,260,60,0],[320,20,360,60,0]]
 
 
@@ -199,6 +203,15 @@ function createLEVEL(){
     colourFills(Player.devCreationTool.holdingWhat)
     rect(Math.floor(mouseX/40)*40,Math.floor(mouseY/40)*40,40,40)
   }
+  if (Player.heldItem == 0){
+    
+  } else if (Player.heldItem == 1){
+    fill(210,130,0)
+    rect(Player['x']+5+Math.floor(Player.LastLook[2]*1.3),Player['y'],20,20)
+  } else if (Player.heldItem == 2){
+    fill(242,210,189)
+    rect(Player['x']+5+Math.floor(Player.LastLook[2]*1.3),Player['y'],20,20)
+  }
   
 }
 
@@ -274,6 +287,40 @@ function colourFills(id){
   }
 }
 
+function projectiles(){
+for (let i = 0; i<projCO.length;i++){
+  if (projCO[i][3] == 0 && Math.random()<(new Date().getTime()-Player.Wait[3])/600000){
+    Player.Wait[3] = new Date().getTime() + 500
+    projCO[i][0] = Math.floor(Math.random()*750)+100
+    projCO[i][1] = 400 - ((Math.floor(Math.random()*2)*2)-1)*200
+    projCO[i][2] = Math.floor(Math.random()*120)
+    projCO[i][3] = 1
+    projCO[i][4] = Math.floor(Math.cos(projCO[i][2])*4)
+    projCO[i][5] = Math.floor(Math.sin(projCO[i][2])*4)
+  } else if (projCO[i][3] != 0){
+    projCO[i][0] += projCO[i][4]
+    projCO[i][1] += projCO[i][5]
+    if (projCO[i][0]+10>1000 ||projCO[i][0]+10<100){
+      projCO[i][4] *=-1
+      projCO[i][6]++
+    } 
+    if (projCO[i][1]+10>630 ||projCO[i][1]+10<90) {
+      projCO[i][5] *=-1
+      projCO[i][6]++
+    }
+    if (projCO[i][6]>6) projCO[i] = [0,0,0,0,0,0,0]
+    fill(193)
+    rect(projCO[i][0],projCO[i][1],20,20)
+    if (Math.abs(Player['x']-projCO[0])<Math.abs(Player['y']-projCO[1])){
+      if (Math.abs(Player['y']-projCO[1]) < 25) Player.Score -= 500
+    } else{
+      if (Math.abs(Player['x']-projCO[0]) < 25) Player.Score -= 500
+    }
+  }
+}
+
+}
+
 /**
  * type in the id number second for which id you want to get rid of
  * 
@@ -288,9 +335,8 @@ function removeFromList(list,id){
   return TempList
 }
 
-SetUpLevel("walls,76,40,72,40,68,40,64,40,60,40,80,36,80,32,80,28,80,24,80,20,76,16,72,16,68,16,64,16,60,16,56,16,52,16,48,16,44,16,40,16,36,16,32,16,56,40,52,40,48,40,44,40,40,40,36,40,32,40,80,40,80,16,68,28,64,32,64,24,68,28,64,32,64,24,28,16,28,36,28,40,28,20,68,28,64,32,64,24,cooking,52,36,52,20,food,68,32,68,24,64,28,delivering,28,32,28,28,28,24")
-// First Stage "walls,76,40,72,40,68,40,64,40,60,40,80,36,80,32,80,28,80,24,80,20,76,16,72,16,68,16,64,16,60,16,56,16,52,16,48,16,44,16,40,16,36,16,32,16,56,40,52,40,48,40,44,40,40,40,36,40,32,40,80,40,80,16,68,28,64,32,64,24,68,28,64,32,64,24,28,16,28,36,28,40,28,20,68,28,64,32,64,24,cooking,52,36,52,20,food,68,32,68,24,64,28,delivering,28,32,28,28,28,24"
-//  "walls,,cooking,,food,56,24,56,20,delivering,56,16"
+SetUpLevel("walls,76,36,76,20,76,40,72,40,68,40,64,40,60,40,80,36,80,20,76,16,72,16,68,16,64,16,60,16,56,16,52,16,48,16,44,16,40,16,36,16,32,16,56,40,52,40,48,40,44,40,40,40,36,40,32,40,80,40,80,16,68,28,64,32,64,24,68,28,64,32,64,24,28,16,28,36,28,40,28,20,68,28,64,32,64,24,cooking,80,32,80,24,52,36,52,20,food,68,32,68,24,64,28,delivering,80,28,28,32,28,28,28,24")
+// First Stage "walls,76,36,76,20,76,40,72,40,68,40,64,40,60,40,80,36,80,20,76,16,72,16,68,16,64,16,60,16,56,16,52,16,48,16,44,16,40,16,36,16,32,16,56,40,52,40,48,40,44,40,40,40,36,40,32,40,80,40,80,16,68,28,64,32,64,24,68,28,64,32,64,24,28,16,28,36,28,40,28,20,68,28,64,32,64,24,cooking,80,32,80,24,52,36,52,20,food,68,32,68,24,64,28,delivering,80,28,28,32,28,28,28,24"
 function SetUpLevel(Code){
   Code = String(Code)+ ","
   let whitchStation = 0
@@ -300,7 +346,6 @@ function SetUpLevel(Code){
     }
     i++
     if (Code[i]!=","){
-
       let dave = ["",""]
       Player.Wait[1] = 0
       for (;(!isNaN(Code[i]) || Code[i] == ",") && i < Code.length;i++){
@@ -334,8 +379,10 @@ function setup(){
   createCanvas(1200,800)
 }
 
-
+Player.Wait[3] = new Date().getTime()+10000
 function draw(){
+  document.querySelector("#Scoreth").textContent = Player.Score
+  console.log(projCO[1])
   background(135)
   fill(255)
   rect(120,80,960,640)
@@ -343,6 +390,7 @@ function draw(){
   fill(195)
   rect(Player['x'],Player['y'],30,30)
   KEYS_DOWN["check"]()
+  line(Player['x']+15,Player['y']+15,Player['x']+15+(Player.LastLook[0]*0.75),Player['y']+15+(Player.LastLook[1]*0.75))
   if (Player.devCreationTool.is_active) {
     for (let i = 0; i< 4; i++){
       UICordinates[i][4] = true
@@ -365,6 +413,7 @@ function draw(){
         stations["cooking"][i][5] += 1
       }
     }
+    projectiles()
     fill(195)
     circle(mouseX,mouseY,30)
 
