@@ -60,6 +60,7 @@ const Player = {
   "Wait": [0,0,0,0,0,0,0,0,0,0,0,0],
   "grab": ()=>{
     if (Player.heldItem == 99) Player.heldItem = 0;
+    if (Player.heldItem == 1) Player.heldItem = 0;
     for (let gotoGo = 0; gotoGo< 4;gotoGo++){
         let list_Of_Stations = ["walls","cooking","food","delivering"]
         let key = list_Of_Stations[gotoGo]
@@ -79,13 +80,13 @@ const Player = {
               } else if (Player.heldItem == 0 && stations[key][i][3] == 4){
                 stations[key][i][3] = 1
               } else if (Player.heldItem == 0 && stations[key][i][3] == 5){
-                Player.heldItem = 2
+                Player.heldItem = 10
                 stations[key][i][3] = 1
               } else if (Player.heldItem == 0 && stations[key][i][3] == 6){
                 Player.heldItem = 99
                 stations[key][i][3] = 1
               } 
-            } else if (Player.heldItem > 0 && key == "delivering"){
+            } else if (Player.heldItem >= 10 && key == "delivering"){
                 Player.heldItem = 0
                 Player.Score += 300
             }
@@ -95,7 +96,8 @@ const Player = {
       }
     },
     "LastLook":[0,0,0],
-    "Score": 0
+    "Score": 0,
+    "alive": true,
 
   
 }
@@ -121,10 +123,10 @@ let projCO = [[800,200,60,1,2,4],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,
 for (let i = 0; i<projCO.length;i++){
   projCO[i].push(0)
 }
-let UICordinates = [[20,20,60,60,false],[120,20,160,60,0],[220,20,260,60,0],[320,20,360,60,0]]
+let UICordinates = [[20,20,60,60,false],[120,20,160,60,0],[220,20,260,60,0],[320,20,360,60,0],[50,500,150,550,true]]
 
 
-// this object will keep tack of which keys are held down and do a corrisponding action
+// this object will keep tack of which keys are held down and do *the* action
 const KEYS_DOWN = {
   "w": {bool: false, func: ()=>{Player.move(2) }},
   "s": {bool: false, func: ()=>{Player.move(4) }},
@@ -156,6 +158,13 @@ window.addEventListener("keyup",(event)=>{
   }
 })
 
+document.querySelector("#LoadLevel").addEventListener("click",()=>{
+  stations.cooking= []
+  stations.food= []
+  stations.delivering= []
+  stations.walls= []
+  SetUpLevel(document.querySelector("#LevelData").value)
+})
 
 document.querySelector("#giveText").addEventListener("click",()=>{
   let dave = []
@@ -207,11 +216,16 @@ function createLEVEL(){
     
   } else if (Player.heldItem == 1){
     fill(210,130,0)
-    rect(Player['x']+5+Math.floor(Player.LastLook[2]*1.3),Player['y'],20,20)
-  } else if (Player.heldItem == 2){
+    rect(Player['x']+5+Math.floor(Player.LastLook[0]*1.3),Player['y']+5+Math.floor(Player.LastLook[1]*1.3),20,20)
+  } else if (Player.heldItem == 10){
     fill(242,210,189)
-    rect(Player['x']+5+Math.floor(Player.LastLook[2]*1.3),Player['y'],20,20)
+    rect(Player['x']+5+Math.floor(Player.LastLook[0]*1.3),Player['y']+5+Math.floor(Player.LastLook[1]*1.3),20,20)
   }
+  if (UICordinates[4][4]){
+    fill(60,0,180)
+    rect(UICordinates[4][0],UICordinates[4][1],Math.abs(UICordinates[4][0]-UICordinates[4][2]),Math.abs(UICordinates[4][1]-UICordinates[4][3]))
+  }
+  console.log(Player.heldItem)
   
 }
 
@@ -289,10 +303,16 @@ function colourFills(id){
 
 function projectiles(){
 for (let i = 0; i<projCO.length;i++){
+  if (Math.abs(Player['x']-projCO[i][0])<Math.abs(Player['y']-projCO[i][1])){
+    if (Math.abs(Player['y']-projCO[i][1]) < 20) Player.alive = false;
+  } else{
+    if (Math.abs(Player['x']-projCO[i][0]) < 20) Player.alive = false;
+  }
+  if (Player.alive){
   if (projCO[i][3] == 0 && Math.random()<(new Date().getTime()-Player.Wait[3])/600000){
     Player.Wait[3] = new Date().getTime() + 500
     projCO[i][0] = Math.floor(Math.random()*750)+100
-    projCO[i][1] = 400 - ((Math.floor(Math.random()*2)*2)-1)*200
+    projCO[i][1] = 300 - ((Math.floor(Math.random()*2)*2)-1)*200
     projCO[i][2] = Math.floor(Math.random()*120)
     projCO[i][3] = 1
     projCO[i][4] = Math.floor(Math.cos(projCO[i][2])*4)
@@ -308,15 +328,25 @@ for (let i = 0; i<projCO.length;i++){
       projCO[i][5] *=-1
       projCO[i][6]++
     }
-    if (projCO[i][6]>6) projCO[i] = [0,0,0,0,0,0,0]
-    fill(193)
-    rect(projCO[i][0],projCO[i][1],20,20)
-    if (Math.abs(Player['x']-projCO[0])<Math.abs(Player['y']-projCO[1])){
-      if (Math.abs(Player['y']-projCO[1]) < 25) Player.Score -= 500
-    } else{
-      if (Math.abs(Player['x']-projCO[0]) < 25) Player.Score -= 500
+    if (projCO[i][6]>7) projCO[i] = [0,0,0,0,0,0,0];
+
+    if (projCO[i][6]<5){
+      fill(193)
+    } else {
+      fill(200,0,0)
     }
-  }
+    if (projCO[i][6] == 6){
+      projCO[i][4] *= 1.75
+      projCO[i][5] *= 1.75
+      projCO[i][6]++
+    }
+    rect(projCO[i][0],projCO[i][1],20,20)
+    
+  } 
+} else {
+  fill(200,0,0)
+  rect(projCO[i][0],projCO[i][1],20,20)
+}
 }
 
 }
@@ -374,6 +404,8 @@ function SetUpLevel(Code){
 
 }
 
+
+
 //-----------------------------------------------------------------------------------------------------
 function setup(){
   createCanvas(1200,800)
@@ -381,8 +413,8 @@ function setup(){
 
 Player.Wait[3] = new Date().getTime()+10000
 function draw(){
+  if (Player.alive){
   document.querySelector("#Scoreth").textContent = Player.Score
-  console.log(projCO[1])
   background(135)
   fill(255)
   rect(120,80,960,640)
@@ -416,5 +448,6 @@ function draw(){
     projectiles()
     fill(195)
     circle(mouseX,mouseY,30)
+  }
 
 }
