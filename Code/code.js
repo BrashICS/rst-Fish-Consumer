@@ -60,39 +60,43 @@ const Player = {
   "Wait": [0,0,0,0,0,0,0,0,0,0,0,0],
   "grab": ()=>{
     if (Player.heldItem == 99) Player.heldItem = 0;
-    if (Player.heldItem == 1) Player.heldItem = 0;
-    for (let gotoGo = 0; gotoGo< 4;gotoGo++){
-        let list_Of_Stations = ["walls","cooking","food","delivering"]
-        let key = list_Of_Stations[gotoGo]
-        for (let i = 0; i<stations[key].length;i++){
-          if (SDist(Player['x']+15+Player.LastLook[0],0,stations[key][i][0]+(stations[key][i][2]/2),0)<35 && SDist(Player['y']+15+Player.LastLook[1],0,stations[key][i][1]+(stations[key][i][2]/2),0)<35){
-            console.log("hit")
-            if (Player.heldItem == 0 && key == "food"){
-              Player.heldItem = 1
-              console.log("graed")
-              
-            } else if (key == "cooking"){
-              stations[key][i][5] = 0
-              if (Player.heldItem == 1 && stations[key][i][3] == 1){
-                console.log("cooking")
-              stations[key][i][3] = 4
-              Player.heldItem = 0
-              } else if (Player.heldItem == 0 && stations[key][i][3] == 4){
-                stations[key][i][3] = 1
-              } else if (Player.heldItem == 0 && stations[key][i][3] == 5){
-                Player.heldItem = 10
-                stations[key][i][3] = 1
-              } else if (Player.heldItem == 0 && stations[key][i][3] == 6){
-                Player.heldItem = 99
-                stations[key][i][3] = 1
-              } 
-            } else if (Player.heldItem >= 10 && key == "delivering"){
+    if (!UICordinates[4][4]){
+      let didTouchSomething = false
+      for (let gotoGo = 0; gotoGo< 4;gotoGo++){
+          let list_Of_Stations = ["walls","cooking","food","delivering"]
+          let key = list_Of_Stations[gotoGo]
+          for (let i = 0; i<stations[key].length;i++){
+            if (SDist(Player['x']+15+Player.LastLook[0],0,stations[key][i][0]+(stations[key][i][2]/2),0)<35 && SDist(Player['y']+15+Player.LastLook[1],0,stations[key][i][1]+(stations[key][i][2]/2),0)<35){
+              console.log("hit")
+              didTouchSomething=true
+              if (Player.heldItem == 0 && key == "food"){
+                Player.heldItem = 1
+                console.log("graed")
+                
+              } else if (key == "cooking"){
+                stations[key][i][5] = 0
+                if (Player.heldItem == 1 && stations[key][i][3] == 1){
+                  console.log("cooking")
+                stations[key][i][3] = 4
                 Player.heldItem = 0
-                Player.Score += 300
-            }
-            Player.Wait[2] = new Date().getTime() +500
-          } 
+                } else if (Player.heldItem == 0 && stations[key][i][3] == 4){
+                  stations[key][i][3] = 1
+                } else if (Player.heldItem == 0 && stations[key][i][3] == 5){
+                  Player.heldItem = 10
+                  stations[key][i][3] = 1
+                } else if (Player.heldItem == 0 && stations[key][i][3] == 6){
+                  Player.heldItem = 99
+                  stations[key][i][3] = 1
+                } 
+              } else if (Player.heldItem >= 10 && key == "delivering"){
+                  Player.heldItem = 0
+                  Player.Score += 300
+              }
+              Player.Wait[2] = new Date().getTime() +500
+            } 
+          }
         }
+        if (!didTouchSomething && Player.heldItem == 1)Player.heldItem = 0;
       }
     },
     "LastLook":[0,0,0],
@@ -123,7 +127,7 @@ let projCO = [[800,200,60,1,2,4],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,0,0,0,0],[0,0,
 for (let i = 0; i<projCO.length;i++){
   projCO[i].push(0)
 }
-let UICordinates = [[20,20,60,60,false],[120,20,160,60,0],[220,20,260,60,0],[320,20,360,60,0],[50,500,150,550,true]]
+let UICordinates = [[20,20,60,60,false],[120,20,160,60,0],[220,20,260,60,0],[320,20,360,60,0],[50,740,150,780,true]]
 
 
 // this object will keep tack of which keys are held down and do *the* action
@@ -206,6 +210,7 @@ function createLEVEL(){
     for (let i = 0; i<stations[key].length;i++){
       colourFills(stations[key][i][3])
       rect(stations[key][i][0],stations[key][i][1],40,40)
+      
     }
   }
   if (Player.devCreationTool.holdingObject){
@@ -222,10 +227,12 @@ function createLEVEL(){
     rect(Player['x']+5+Math.floor(Player.LastLook[0]*1.3),Player['y']+5+Math.floor(Player.LastLook[1]*1.3),20,20)
   }
   if (UICordinates[4][4]){
-    fill(60,0,180)
+    fill(160,0,160)
     rect(UICordinates[4][0],UICordinates[4][1],Math.abs(UICordinates[4][0]-UICordinates[4][2]),Math.abs(UICordinates[4][1]-UICordinates[4][3]))
+    textSize(20)
+    fill(255)
+    text('START',UICordinates[4][0]+20,UICordinates[4][1]+26)
   }
-  console.log(Player.heldItem)
   
 }
 
@@ -265,8 +272,8 @@ function mouseClicked(){
         Player.devCreationTool.holdingObject = true
         Player.devCreationTool.holdingWhat = i
         Player.Wait[0] = new Date().getTime() + 500 
-      } else if( i <8){
-
+      } else if( i == 4){
+        UICordinates[4][4] = false
       }
     };
   }
@@ -411,13 +418,15 @@ function setup(){
   createCanvas(1200,800)
 }
 
-Player.Wait[3] = new Date().getTime()+10000
 function draw(){
   if (Player.alive){
-  document.querySelector("#Scoreth").textContent = Player.Score
   background(135)
   fill(255)
   rect(120,80,960,640)
+  fill(0)
+  stroke(0)
+  strokeWeight(1)
+  text("SCORE:  "+Player.Score,10,20)
 
   fill(195)
   rect(Player['x'],Player['y'],30,30)
@@ -443,11 +452,23 @@ function draw(){
           stations["cooking"][i][3] = 5;
         }
         stations["cooking"][i][5] += 1
+          strokeWeight(4)
+          fill(0)
+          rect(stations["cooking"][i][0]-30,stations["cooking"][i][1]-35,100,20)
+          strokeWeight(0)
+          colourFills(stations["cooking"][i][3])
+          rect(stations["cooking"][i][0]-30,stations["cooking"][i][1]-35,Math.floor(stations["cooking"][i][5]/10),20)
+          strokeWeight(0)
+          colourFills(5)
+          rect(stations["cooking"][i][0]+19,stations["cooking"][i][1]-35,2,20)
+          strokeWeight(2)
       }
     }
-    projectiles()
-    fill(195)
-    circle(mouseX,mouseY,30)
+    if (!UICordinates[4][4]){
+      projectiles()
+    } else{
+      Player.Wait[3] = new Date().getTime()+10000
+    }
   }
 
 }
