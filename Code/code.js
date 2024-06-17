@@ -327,11 +327,11 @@ for (let i = 0; i<projCO.length;i++){
   } else if (projCO[i][3] != 0){
     projCO[i][0] += projCO[i][4]
     projCO[i][1] += projCO[i][5]
-    if (projCO[i][0]+10>1000 ||projCO[i][0]+10<100){
+    if (projCO[i][0]+10>1060 ||projCO[i][0]+10<140){
       projCO[i][4] *=-1
       projCO[i][6]++
     } 
-    if (projCO[i][1]+10>630 ||projCO[i][1]+10<90) {
+    if (projCO[i][1]+10>700 ||projCO[i][1]+10<100) {
       projCO[i][5] *=-1
       projCO[i][6]++
     }
